@@ -1,1 +1,15 @@
 
+extends layout.pug
+
+block content
+  if errors
+    div(class='alert alert-danger' role='alert')
+      p The following error(s) occurred:
+      ul
+        each error in errors
+          li= error
+  form(action=`/book/edit/${book.id}` method='post')
+    include book-form-fields.pug
+    div(class='py-4')
+      button(type='submit' class='btn btn-primary') Update Book
+      a(href='/' class='btn btn-warning ml-2') Cancel

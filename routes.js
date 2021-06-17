@@ -71,52 +71,124 @@ router.get('/', asyncHandler( async (req, res, next) => {
 
 
 
-router.get('/book/add', csrfProtection, (req, res, next) => {
+router.get('/book/add', csrfProtection, 
+  (req, res, next) => {
 
-  const book = db.Book.build() 
-  res.render('book-add', {
-    title: 'Add Book',
-    book,
-    csrfToken: req.csrfToken()
-  })
+    const book = db.Book.build() 
+    res.render('book-add', {
+      title: 'Add Book',
+      book,
+      csrfToken: req.csrfToken()
+    })
 
 })
 
-router.post('/book/add', bookValidators, csrfProtection, asyncHandler(async (req, res, next) => {
+router.post('/book/add', bookValidators, csrfProtection, 
+  asyncHandler(async (req, res, next) => {
 
-  const {  
-    title, 
-    author, 
-    releaseDate, 
-    pageCount, 
-    publisher
-  } = req.body
+    const {  
+      title, 
+      author, 
+      releaseDate, 
+      pageCount, 
+      publisher
+    } = req.body
 
-  const book = db.Book.build({
-    title, 
-    author, 
-    releaseDate, 
-    pageCount, 
-    publisher
-  }) 
-  
-  try{
-    await book.save();
-    res.redirect('/')
-  } catch (err) {
-    if (err.name === 'SequelizeValidationError') {
-      const errors = err.errors.map((error) => error.message)
-      res.render('book-add',{
-        title: 'Add Book',
-        book, 
-        errors,
-        csrfToken: req.csrfToken()
-      })
-    }else {
-      next(err)
+    const book = db.Book.build({
+      title, 
+      author, 
+      releaseDate, 
+      pageCount, 
+      publisher
+    }) 
+
+    const validatorErrors = validationResult(req)
+    
+    if (validatorErrors.isEmpty()) {
+      await book.save();
+      res.redirect('/')
+    } else {
+      if (err.name === 'SequelizeValidationError') {
+        const errors = validatorErrors.array().map((error) => error.message)
+        res.render('book-add',{
+          title: 'Add Book',
+          book, 
+          errors,
+          csrfToken: req.csrfToken()
+        })
+      }else {
+        next(err)
+      }
     }
-  }
 }))
+
+
+
+router.get('/book/edit/:id(\\d+)', csrfProtection,
+  asyncHandler(async (req, res) => {
+    const bookId = parseInt(req.params.id, 10);
+    const book = await db.Book.findByPk(bookId);
+    res.render('book-edit', {
+      title: 'Edit Book',
+      book,
+      csrfToken: req.csrfToken(),
+    });
+  }));
+
+router.post('/book/edit/:id(\\d+)', csrfProtection, bookValidators,
+asyncHandler(async (req, res) => {
+  const bookId = parseInt(req.params.id, 10); 
+  const bookToUpdate = await db.Book.findByPk(bookId);
+
+  const {
+    title,
+    author,
+    releaseDate,
+    pageCount,
+    publisher,
+  } = req.body;
+
+  const book = {
+    title,
+    author,
+    releaseDate,
+    pageCount,
+    publisher,
+  };
+
+  const validatorErrors = validationResult(req);
+
+  if (validatorErrors.isEmpty()) {
+    await bookToUpdate.update(book);
+    res.redirect('/');
+  } else {
+    const errors = validatorErrors.array().map((error) => error.msg);
+    res.render('book-edit', {
+      title: 'Edit Book',
+      book: { ...book, id: bookId },
+      errors,
+      csrfToken: req.csrfToken(),
+    });
+  }
+}));
+
+router.get('/book/delete/:id(\\d+)', csrfProtection, asyncHandler(async (req, res) => {
+  const bookId = parseInt(req.params.id, 10);
+  const book = await db.Book.findByPk(bookId);
+  res.render('book-delete', {
+    title: 'Delete Book',
+    book,
+    csrfToken: req.csrfToken(),
+  });
+}));
+
+router.post('/book/delete/:id(\\d+)', csrfProtection, asyncHandler(async (req, res) => {
+  const bookId = parseInt(req.params.id, 10);
+  const book = await db.Book.findByPk(bookId);
+  await book.destroy();
+  res.redirect('/');
+}));
+
 
 
 module.exports = router;
