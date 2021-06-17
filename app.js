@@ -1,13 +1,18 @@
 const express = require('express')
 const routes = require('./routes')
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 
 const app = express();
 const port = 8420;
 app.set('view engine', 'pug');
 app.use(morgan('dev'))
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
 
 app.use(routes)
+
+
 
 app.use((req, res, next) => {
     const err = new Error('The requested page couldn\'t be found.');
@@ -24,7 +29,12 @@ app.use((err, req, res, next) => {
     } else {
       next(err);
     }
-  });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err)
+  next(err)
+})
   
   // Generic error handler.
 app.use((err, req, res, next) => {
@@ -36,6 +46,8 @@ app.use((err, req, res, next) => {
       stack: isProduction ? null : err.stack,
     });
   });
+
+
 
 module.exports = app
 
