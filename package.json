@@ -1,7 +1,6 @@
 {
   "name": "data-driven-apps",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "nodemon -r dotenv/config ./bin/www",
@@ -28,5 +27,14 @@
     "dotenv-cli": "^4.0.0",
     "nodemon": "^2.0.7",
     "sequelize-cli": "^5.5.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kevjinx/data-driven-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kevjinx/data-driven-app/issues"
+  },
+  "homepage": "https://github.com/Kevjinx/data-driven-app#readme",
+  "description": ""
 }
